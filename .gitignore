@@ -1,0 +1,5 @@
+.direnv/
+*.hi
+*.o
+**/dist-newstyle/
+**/Main
