@@ -16,7 +16,7 @@
 
         pkgs = import nixpkgs { system = "${system}"; };
         haskellPkgs = pkgs.haskell.packages.${ghcVersion};
-        ghc = haskellPkgs.ghcWithHoogle (_: []);
+        ghc = haskellPkgs.ghcWithHoogle (_: [ ]);
       in {
         packages = { };
         app = { };
@@ -50,6 +50,7 @@
             haskellPkgs.ormolu
 
             pkgs.nixfmt
+            pkgs.entr
           ];
         };
       });
