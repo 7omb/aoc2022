@@ -5,12 +5,12 @@ points :: String -> String
 points = show . sum . map (pointsForRound . words) . lines
 
 pointsForRound :: [String] -> Integer
-pointsForRound ["A", "X"] = 1 + 3
-pointsForRound ["A", "Y"] = 2 + 6
-pointsForRound ["A", "Z"] = 3 + 0
-pointsForRound ["B", "X"] = 1 + 0
-pointsForRound ["B", "Y"] = 2 + 3
-pointsForRound ["B", "Z"] = 3 + 6
-pointsForRound ["C", "X"] = 1 + 6
-pointsForRound ["C", "Y"] = 2 + 0
-pointsForRound ["C", "Z"] = 3 + 3
+pointsForRound ["A", "X"] = 0 + 3
+pointsForRound ["A", "Y"] = 3 + 1
+pointsForRound ["A", "Z"] = 6 + 2
+pointsForRound ["B", "X"] = 0 + 1
+pointsForRound ["B", "Y"] = 3 + 2
+pointsForRound ["B", "Z"] = 6 + 3
+pointsForRound ["C", "X"] = 0 + 2
+pointsForRound ["C", "Y"] = 3 + 3
+pointsForRound ["C", "Z"] = 6 + 1
