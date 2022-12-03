@@ -1,20 +1,18 @@
-{-# LANGUAGE LambdaCase #-}
-
 import Control.Arrow ((>>>))
 import Data.Char (isLower, isUpper, ord)
 import Data.Set qualified as S
-import System.Posix (BaudRate (B9600))
 
 main :: IO ()
 main = interact (lines >>> prioriies)
 
 prioriies :: [String] -> String
-prioriies = (map . map) toPriority >>> map (split >>> commonItem) >>> sum >>> show
+prioriies = (map . map) toPriority >>> collectThree >>> map commonItem >>> sum >>> show
 
-split :: [a] -> ([a], [a])
-split s = splitAt mid s
+collectThree :: [a] -> [(a, a, a)]
+collectThree = go []
   where
-    mid = length s `div` 2
+    go acc (a : b : c : xs) = go ((a, b, c) : acc) xs
+    go acc [] = acc
 
 toPriority :: Char -> Int
 toPriority c
@@ -22,7 +20,7 @@ toPriority c
   | isLower c = ord c - 96
   | otherwise = error "unexpected char"
 
-commonItem :: Ord a => ([a], [a]) -> a
-commonItem (x, y) = S.findMax intersection
+commonItem :: Ord a => ([a], [a], [a]) -> a
+commonItem (x, y, z) = S.findMax intersection
   where
-    intersection = S.fromList x `S.intersection` S.fromList y
+    intersection = S.fromList x `S.intersection` S.fromList y `S.intersection` S.fromList z
