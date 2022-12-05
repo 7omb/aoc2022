@@ -36,7 +36,7 @@ move stacks (Move {start, end, numCrates}) = addedEnd
 
     index = length startStack - numCrates
     newStart = take index startStack
-    toMove = reverse $ drop index startStack
+    toMove = drop index startStack
     newEnd = endStack ++ toMove
 
     addedStart = take (start - 1) stacks ++ [newStart] ++ drop start stacks
