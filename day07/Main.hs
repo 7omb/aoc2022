@@ -1,19 +1,18 @@
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 
 import Control.Arrow ((>>>))
-import Data.List (find, foldl', partition)
+import Data.List (find, foldl', partition, sort)
 
 main :: IO ()
-main = interact (lines >>> map (words >>> parseLine) >>> sizes)
+main = interact (lines >>> map (words >>> parseLine) >>> sizes >>> dirSizes >>> toDelete >>> show)
 
-sizes :: [Input] -> String
-sizes = foldl' apply Initial >>> toFileSystem >>> toSizes >>> dirSizes >>> filter (<= sizeLimit) >>> sum >>> show
+sizes :: [Input] -> Sizes
+sizes = foldl' apply Initial >>> toFileSystem >>> toSizes
 
 data Input = Cd Target | Ls | Listing Content
   deriving (Eq, Show)
 
-data Target = Up | ChangeDir String
+data Target = Up | DirName String
   deriving (Eq, Show)
 
 data Content = Dir String | File String Integer
@@ -22,7 +21,7 @@ data Content = Dir String | File String Integer
 parseLine :: [String] -> Input
 parseLine = \case
   ["$", "cd", ".."] -> Cd Up
-  ["$", "cd", dir] -> Cd (ChangeDir dir)
+  ["$", "cd", dir] -> Cd (DirName dir)
   ["$", "ls"] -> Ls
   ["dir", dir] -> Listing (Dir dir)
   [size, name] -> Listing (File name (read size))
@@ -38,7 +37,7 @@ type Breadcrumb = [(String, [FileSystem])]
 apply :: Position -> Input -> Position
 apply (In name content breadcrumbs) (Listing listing) =
   In name (add content listing) breadcrumbs
-apply (In name content breadcrumbs) (Cd (ChangeDir subName)) =
+apply (In name content breadcrumbs) (Cd (DirName subName)) =
   case getNode subName content of
     Just (DirNode _ fs) -> In subName fs newBreadcrumb
     Just (FileNode _ _) -> error ("Cannot cd into file: " ++ subName)
@@ -50,7 +49,7 @@ apply (In name content ((parentName, parentFs) : breadcrumbs)) (Cd Up) =
    in In parentName (currentDir : parentFs) breadcrumbs
 apply (In name content []) (Cd Up) = error "Cannot cd .. without breadcrumbs"
 apply pos@(In {}) Ls = pos
-apply Initial (Cd (ChangeDir "/")) = In "/" [] []
+apply Initial (Cd (DirName "/")) = In "/" [] []
 apply Initial _ = error "Initial position must start at root"
 
 add :: [FileSystem] -> Content -> [FileSystem]
@@ -81,9 +80,6 @@ toFileSystem pos@(In _ _ (b : bs)) = toFileSystem (apply pos (Cd Up))
 toFileSystem (In name fs []) = DirNode name fs
 toFileSystem Initial = error "Cannot convert initial state to filesystem"
 
-sizeLimit :: Integer
-sizeLimit = 100000
-
 data Sizes = DirSize Integer [Sizes] | FileSize Integer
   deriving (Eq, Show)
 
@@ -101,3 +97,9 @@ getSize (FileSize size) = size
 dirSizes :: Sizes -> [Integer]
 dirSizes (DirSize size sizes) = size : concatMap dirSizes sizes
 dirSizes (FileSize _) = []
+
+toDelete :: [Integer] -> Integer
+toDelete (root : remaining) =
+  let freeSpace = 70000000 - root
+      bigEnough = dropWhile (\size -> freeSpace + size < 30000000) (sort remaining)
+   in head bigEnough
