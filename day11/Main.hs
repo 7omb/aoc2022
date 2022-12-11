@@ -6,7 +6,7 @@ import Data.List.Split (splitOn)
 import Prelude hiding (round)
 
 main :: IO ()
-main = interact (parse >>> run 20 >>> map business >>> sort >>> reverse >>> take 2 >>> show)
+main = interact (parse >>> run 10000 >>> map business >>> sort >>> reverse >>> take 2 >>> product >>> show)
 
 parse :: String -> [Monkey]
 parse = splitOn "\n\n" >>> map parseMonkey
@@ -61,10 +61,10 @@ eval old = \case
 
 data Throw = Throw {toMonkey :: Int, item :: Int}
 
-throw :: Monkey -> (Monkey, [Throw])
-throw Monkey {monkey, items, operation, test, ifTrue, ifFalse, business} =
+throw :: Int -> Monkey -> (Monkey, [Throw])
+throw divisor Monkey {monkey, items, operation, test, ifTrue, ifFalse, business} =
   let inspected = map (`eval` operation) items
-      bored = map (`div` 3) inspected
+      bored = map (`mod` divisor) inspected
    in ( Monkey {monkey, items = [], operation, test, ifTrue, ifFalse, business = business + length inspected},
         map (\item -> Throw {toMonkey = if item `mod` test == 0 then ifTrue else ifFalse, item = item}) bored
       )
@@ -78,10 +78,11 @@ catch [] monkeys = monkeys
 round :: [Monkey] -> [Monkey]
 round monkeys = go 0 monkeys
   where
+    divisor = product $ map test monkeys
     go current monkeys
       | current < length monkeys =
           let ([m], ms) = partition (\m -> monkey m == current) monkeys
-              (updatedMonkey, throws) = throw m
+              (updatedMonkey, throws) = throw divisor m
               catched = catch throws ms
            in go (current + 1) (updatedMonkey : catched)
       | otherwise = monkeys
