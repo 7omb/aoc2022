@@ -17,7 +17,7 @@
         pkgs = import nixpkgs { system = "${system}"; };
         haskellPkgs = pkgs.haskell.packages.${ghcVersion};
         ghc = haskellPkgs.ghcWithHoogle
-          (_: [ haskellPkgs.split haskellPkgs.vector ]);
+          (_: [ haskellPkgs.split haskellPkgs.vector haskellPkgs.megaparsec ]);
       in {
         packages = { };
         app = { };
