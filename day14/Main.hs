@@ -44,7 +44,7 @@ toCave input =
   Cave
     { walls = S.fromList positions,
       sand = S.empty,
-      maxY = maxY
+      maxY = maxY + 2
     }
   where
     lines = concatMap toLines input
@@ -90,7 +90,6 @@ nextPosition = go (500, 0)
 step :: Position -> Cave -> Update
 step p@(x, y) cave =
   if
-      | y + 1 > maxY cave -> Outside
       | isFree cave mid -> Falling mid
       | isFree cave left -> Falling left
       | isFree cave right -> Falling right
@@ -101,4 +100,4 @@ step p@(x, y) cave =
     right = (x + 1, y + 1)
 
 isFree :: Cave -> Position -> Bool
-isFree cave pos = pos `S.notMember` walls cave && pos `S.notMember` sand cave
+isFree cave pos@(_, y) = pos `S.notMember` walls cave && pos `S.notMember` sand cave && y < maxY cave
